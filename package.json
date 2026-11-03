@@ -1,0 +1,22 @@
+{
+  "name": "ninowatch-frontend",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": { "dev": "next dev", "build": "next build", "start": "next start", "typecheck": "tsc --noEmit" },
+  "dependencies": {
+    "@tanstack/react-query": "^5",
+    "lucide-react": "^0.468.0",
+    "next": "^15",
+    "react": "^19",
+    "react-dom": "^19",
+    "react-globe.gl": "^2"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^22",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}

@@ -1,0 +1,100 @@
+@import "tailwindcss";
+
+/* Theme tokens. Components use these names only (bg-accent, text-muted, bg-risk-high),
+   never raw colors, so a new theme is one block below. */
+:root {
+  --background: #000000;
+  --foreground: rgba(255, 255, 255, 0.92);
+  --muted: rgba(255, 255, 255, 0.64);
+  --accent: #e8a864;
+  --accent-fg: #1a1008;
+  --glass-bg: rgba(255, 255, 255, 0.05);
+  --glass-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+  --separator: transparent;
+  --button-bg: rgba(255, 255, 255, 0.1);
+  --glass-blur: 18px;
+  --radius: 0; /* square geometry: set to 1.25rem to bring back rounded boxes */
+  --risk-moderate: #f2d16b;
+  --risk-high: #ff9a3c;
+  --risk-extreme: #ff5a4e;
+}
+[data-theme="ocean"] {
+  --background: #06131b;
+  --foreground: #eef5f3;
+  --muted: #afc4c8;
+  --accent: #75d2cf;
+  --accent-fg: #06131b;
+  --glass-bg: rgba(11, 38, 48, 0.64);
+  --button-bg: rgba(117, 210, 207, 0.11);
+  --risk-moderate: #e6c76c;
+  --risk-high: #f49b53;
+  --risk-extreme: #f05f59;
+}
+[data-theme="graphite"] {
+  --background: #050607;
+  --foreground: #eef0ee;
+  --muted: #a9afad;
+  --accent: #e6b84a;
+  --accent-fg: #11100b;
+  --glass-bg: #151719;
+  --glass-blur: 0px;
+  --glass-shadow: none;
+  --button-bg: #232527;
+  --separator: rgba(238, 240, 238, 0.1);
+  --risk-moderate: #d8c887;
+  --risk-high: #ee9b51;
+  --risk-extreme: #f06455;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-accent-fg: var(--accent-fg);
+  --color-risk-moderate: var(--risk-moderate);
+  --color-risk-high: var(--risk-high);
+  --color-risk-extreme: var(--risk-extreme);
+  --font-sans: var(--font-mono), ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+
+html { font-size: 13px; } /* all rem sizes scale from here */
+* { scrollbar-width: none; }
+*::-webkit-scrollbar { display: none; }
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-weight: 400;
+  font-variant-numeric: tabular-nums;
+}
+:where(button, a) { -webkit-tap-highlight-color: transparent; }
+::selection { background: var(--accent); color: var(--accent-fg); }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+[data-theme="graphite"] .map-stage {
+  background-color: var(--background);
+  background-image: linear-gradient(to right, rgba(238, 240, 238, 0.025) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(238, 240, 238, 0.025) 1px, transparent 1px);
+  background-size: 44px 44px;
+}
+
+@layer components {
+  .glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(var(--glass-blur)) saturate(150%);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(150%);
+    border: 0;
+    box-shadow: var(--glass-shadow);
+    border-radius: var(--radius);
+    padding: 1.1rem;
+  }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
+    min-height: 30px; min-width: 30px; padding: 0 0.55rem; border-radius: var(--radius);
+    border: 0; background: var(--button-bg);
+    backdrop-filter: blur(12px); color: var(--foreground); cursor: pointer; font-weight: 400;
+    line-height: 1.2; white-space: nowrap;
+  }
+  .btn[aria-pressed="true"], .btn-primary { background: var(--accent); color: var(--accent-fg); font-weight: 600; }
+  .label { color: var(--accent); font-size: 0.75rem; font-weight: 600; letter-spacing: 0.12em; text-transform: uppercase; }
+}
