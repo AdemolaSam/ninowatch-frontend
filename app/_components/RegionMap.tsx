@@ -72,6 +72,8 @@ export function RegionMap({ region, incidents }: { region: Region; incidents: In
   const [layer, setLayer] = useState<Layer>("temperature");
   const [info, setInfo] = useState("Move over the map to inspect the source samples.");
   const data = climate.data;
+  const hasVariance = data?.cells.some((cell) => cell.anomaly !== null) ?? false;
+  const activeLayer = layer === "variance" && !hasVariance ? "temperature" : layer;
   const outlines = useMemo(() => {
     if (!data || !countries.data) return [];
     const [west, south, east, north] = data.bbox;
@@ -85,8 +87,8 @@ export function RegionMap({ region, incidents }: { region: Region; incidents: In
   }, [data, countries.data]);
 
   useEffect(() => {
-    if (canvas.current && data) drawSurface(canvas.current, data, layer);
-  }, [data, layer]);
+    if (canvas.current && data) drawSurface(canvas.current, data, activeLayer);
+  }, [data, activeLayer]);
 
   if (climate.isPending) return <div className="p-4"><LoadingBlock /></div>;
   if (climate.isError || !data) return <div className="glass m-4 text-sm">Live climate grid is not available for this area yet. The seasonal outlook remains available.</div>;
@@ -94,7 +96,7 @@ export function RegionMap({ region, incidents }: { region: Region; incidents: In
   const [west, south, east, north] = data.bbox;
   const X = (lng: number) => ((lng - west) / (east - west)) * WIDTH;
   const Y = (lat: number) => ((north - lat) / (north - south)) * HEIGHT;
-  const scale = layer === "variance" ? SCALES[ACTIVE_THEME].anomaly : SCALES[ACTIVE_THEME].temp;
+  const scale = activeLayer === "variance" ? SCALES[ACTIVE_THEME].anomaly : SCALES[ACTIVE_THEME].temp;
   const missing = data.cells.filter((cell) => cell.anomaly === null).length;
 
   function inspect(clientX: number, clientY: number, rect: DOMRect) {
@@ -115,15 +117,17 @@ export function RegionMap({ region, incidents }: { region: Region; incidents: In
         <p className="text-xs text-muted">Open-Meteo forecast · smoothed display of {data.cols} × {data.rows} samples</p>
       </div>
       <div className="flex gap-2" role="group" aria-label="Map layer">
-        <button className="btn" aria-pressed={layer === "temperature"} onClick={() => setLayer("temperature")}>Temperature</button>
-        <button className="btn" aria-pressed={layer === "variance"} onClick={() => setLayer("variance")}>Variance</button>
+        <button className="btn" aria-pressed={activeLayer === "temperature"} onClick={() => setLayer("temperature")}>Temperature</button>
+        <button className="btn" aria-pressed={activeLayer === "variance"} disabled={!hasVariance}
+          title={hasVariance ? "Compare with the historical baseline" : "Historical baseline is not available yet"}
+          onClick={() => setLayer("variance")}>Variance</button>
       </div>
     </div>
     <div className="glass relative min-h-0 flex-1 overflow-hidden !p-0">
       <canvas ref={canvas} width={RASTER_WIDTH} height={RASTER_HEIGHT} className="absolute inset-0 h-full w-full"
         onPointerMove={(event) => inspect(event.clientX, event.clientY, event.currentTarget.getBoundingClientRect())} />
       <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} className="pointer-events-none absolute inset-0 h-full w-full" preserveAspectRatio="none"
-        role="img" aria-label={`${layer} climate map with country boundaries for ${region.name}`}>
+        role="img" aria-label={`${activeLayer} climate map with country boundaries for ${region.name}`}>
         {outlines.map((country) => <path key={country.id} d={country.path}
           fill="none" stroke="rgba(255,255,255,.56)" strokeWidth={1.2} strokeLinejoin="round" />)}
         {incidents.filter((item) => item.lng >= west && item.lng <= east && item.lat >= south && item.lat <= north).map((item) =>
@@ -134,7 +138,8 @@ export function RegionMap({ region, incidents }: { region: Region; incidents: In
       <span>{scale.min}°C</span>
       <span className="h-2 min-w-28 flex-1 rounded-sm" style={{ background: gradientCss(scale) }} aria-hidden />
       <span>{scale.max}°C</span>
-      {layer === "variance" && missing > 0 && <span>Striped: baseline unavailable ({missing} of {data.cells.length} samples)</span>}
+      {activeLayer === "variance" && missing > 0 && <span>Striped: baseline unavailable ({missing} of {data.cells.length} samples)</span>}
+      {!hasVariance && <span>Historical comparison is temporarily unavailable.</span>}
     </div>
     <p className="text-xs text-muted">{info} · Updated {new Date(data.generatedAt).toLocaleString()}.</p>
   </div>;
